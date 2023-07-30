@@ -390,7 +390,7 @@ var theInputState inputState
 
 type inputState struct {
 	state ui.InputState
-	m     sync.Mutex
+	m     sync.RWMutex
 }
 
 func (i *inputState) update(fn func(*ui.InputState)) {
@@ -400,8 +400,8 @@ func (i *inputState) update(fn func(*ui.InputState)) {
 }
 
 func (i *inputState) appendInputChars(runes []rune) []rune {
-	i.m.Lock()
-	defer i.m.Unlock()
+	i.m.RLock()
+	defer i.m.RUnlock()
 	return append(runes, i.state.Runes...)
 }
 
@@ -410,8 +410,8 @@ func (i *inputState) isKeyPressed(key Key) bool {
 		return false
 	}
 
-	i.m.Lock()
-	defer i.m.Unlock()
+	i.m.RLock()
+	defer i.m.RUnlock()
 
 	switch key {
 	case KeyAlt:
@@ -428,26 +428,26 @@ func (i *inputState) isKeyPressed(key Key) bool {
 }
 
 func (i *inputState) cursorPosition() (int, int) {
-	i.m.Lock()
-	defer i.m.Unlock()
+	i.m.RLock()
+	defer i.m.RUnlock()
 	return i.state.CursorX, i.state.CursorY
 }
 
 func (i *inputState) wheel() (float64, float64) {
-	i.m.Lock()
-	defer i.m.Unlock()
+	i.m.RLock()
+	defer i.m.RUnlock()
 	return i.state.WheelX, i.state.WheelY
 }
 
 func (i *inputState) isMouseButtonPressed(mouseButton MouseButton) bool {
-	i.m.Lock()
-	defer i.m.Unlock()
+	i.m.RLock()
+	defer i.m.RUnlock()
 	return i.state.MouseButtonPressed[mouseButton]
 }
 
 func (i *inputState) appendTouchIDs(touches []TouchID) []TouchID {
-	i.m.Lock()
-	defer i.m.Unlock()
+	i.m.RLock()
+	defer i.m.RUnlock()
 
 	for _, t := range i.state.Touches {
 		touches = append(touches, t.ID)
@@ -456,8 +456,8 @@ func (i *inputState) appendTouchIDs(touches []TouchID) []TouchID {
 }
 
 func (i *inputState) touchPosition(id TouchID) (int, int) {
-	i.m.Lock()
-	defer i.m.Unlock()
+	i.m.RLock()
+	defer i.m.RUnlock()
 
 	for _, t := range i.state.Touches {
 		if id != t.ID {
@@ -469,13 +469,13 @@ func (i *inputState) touchPosition(id TouchID) (int, int) {
 }
 
 func (i *inputState) windowBeingClosed() bool {
-	i.m.Lock()
-	defer i.m.Unlock()
+	i.m.RLock()
+	defer i.m.RUnlock()
 	return i.state.WindowBeingClosed
 }
 
 func (i *inputState) droppedFiles() fs.FS {
-	i.m.Lock()
-	defer i.m.Unlock()
+	i.m.RLock()
+	defer i.m.RUnlock()
 	return i.state.DroppedFiles
 }
